@@ -1,8 +1,16 @@
 import numpy as np
 import cv2
 
+def draw_normal(image, normal, face):
+    if normal[0] == float('nan') or normal[1] == float('nan'):
+        print("Error!!")
+    p1 = face['keypoints']['nose']
+    p2 = (int(np.round(p1[0]+normal[0])), int(np.round(p1[1]+normal[1])))
 
-def find_normal(landmarks,image):
+    cv2.line(image, p1, p2, (0,0,255), 2)
+    return image
+
+def find_normal(landmarks):
     left_eye = np.array(landmarks['left_eye'])
     right_eye = np.array(landmarks['right_eye'])
     eye_vector = right_eye-left_eye
@@ -42,10 +50,6 @@ def find_normal(landmarks,image):
     x1 = -(m1-Rn**2+2*m2*Rn**2)/(2*Rn**2*(1-m2))
     x2 = np.sqrt(((m1-Rn**2+2*m2*Rn**2)/(2*Rn**2*(1-m2)))**2+(m2*Rn**2)/(Rn**2*(1-m2)))
     dz = np.sqrt(x1+x2)
-
-    #printing
-    cv2.circle(image, (int(nose_base[0]), int(nose_base[1])), 1, (0,255,0))
-    cv2.line(image, p1, p2, (255,255,0), 2)
 
     sigma = np.arccos(np.abs(dz))
     normal = np.array([np.sin(sigma)*np.cos(tau), np.sin(sigma)*np.sin(tau), -np.cos(sigma)])
