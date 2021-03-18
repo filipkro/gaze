@@ -21,10 +21,13 @@ def find_normal(landmarks,image):
     ln = np.linalg.norm(projected_normal)
     lf = np.linalg.norm(a_vector)
 
-    tau = np.arccos(np.dot(projected_normal,(1,0))/np.linalg.norm(projected_normal))
-    if projected_normal[1]<0 :
+    l1 = max(np.linalg.norm(projected_normal),0.01)
+    l2 = max(np.linalg.norm(projected_normal)*np.linalg.norm(a_vector),0.01)
+    
+    tau = np.arccos(np.dot(projected_normal,(1,0))/l1)
+    if projected_normal[1]<0:
         tau = 2*np.pi-tau
-    theta = np.arccos(np.dot(projected_normal,-a_vector)/(np.linalg.norm(projected_normal)*np.linalg.norm(a_vector)))
+    theta = np.arccos(np.dot(projected_normal,-a_vector)/l2)
 
     p1 = landmarks['nose']
     p2 = landmarks['nose']+projected_normal
