@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Training data
+*.jpg
+*.jpeg
+*.png
+*.mp4
+
 # C extensions
 *.so
 
