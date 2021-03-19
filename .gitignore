@@ -8,6 +8,7 @@ __pycache__/
 *.jpeg
 *.png
 *.mp4
+*.csv
 
 # C extensions
 *.so

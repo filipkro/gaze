@@ -3,6 +3,7 @@ import cv2
 import os
 import numpy as np
 from calc_normal_3d import find_normal
+from calc_normal_3d import draw_normal
 
 
 def draw(image, face):
@@ -13,14 +14,6 @@ def draw(image, face):
 
    for value in face['keypoints'].items():
       cv2.circle(image, (int(np.round(value[1][0])),int(np.round(value[1][1]))), 3, (0,0,255))
-   return image
-
-def draw_normal(image, normal, face):
-
-   p1 = face['keypoints']['nose']
-   p2 = (int(np.round(p1[0]+normal[0])), int(np.round(p1[0]+normal[1])))
-
-   cv2.line(image, p1, p2, (255,0,0), 2)
    return image
 
 
@@ -43,7 +36,7 @@ if __name__ == '__main__':
       for face in faces:
          print(face)
          image = draw(pixels, face)
-         normal = find_normal(face['keypoints'],image)
+         normal = find_normal(face['keypoints'])
          image = draw_normal(image, 100*normal, face)
          
       cv2.imshow(filename,image)
