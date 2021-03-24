@@ -2,6 +2,8 @@ import csv
 import cv2
 import numpy as np
 from augmenter import augmenter
+import tensorflow as tf
+import tfrecord_utils as utils
 
 def show_images(data):
     if('croppedLeft' in data):
@@ -13,7 +15,7 @@ def show_images(data):
         cv2.circle(croppedLeft, (int(np.round(cl_outer_corner[0])),int(np.round(cl_outer_corner[1]))), 0, (0,255,255))
         cv2.circle(croppedLeft, (int(np.round(cl_inner_corner[0])),int(np.round(cl_inner_corner[1]))), 0, (0,255,255))
 
-        scale_percent = 200 # percent of original size
+        scale_percent = 400 # percent of original size
         width = int(croppedLeft.shape[1] * scale_percent / 100)
         height = int(croppedLeft.shape[0] * scale_percent / 100)
         dim = (width, height)
@@ -33,7 +35,7 @@ def show_images(data):
         cv2.circle(croppedRight, (int(np.round(cr_inner_corner[0])),int(np.round(cr_inner_corner[1]))), 0, (0,255,255))
 
 
-        scale_percent = 200 # percent of original size
+        scale_percent = 400 # percent of original size
         width = int(croppedRight.shape[1] * scale_percent / 100)
         height = int(croppedRight.shape[0] * scale_percent / 100)
         dim = (width, height)
@@ -43,8 +45,8 @@ def show_images(data):
         cv2.imshow('image',resized)
         cv2.waitKey(0)
 
-def read_csv():
-    reader = csv.DictReader(open('Data/training/training.csv'))
+def read_csv(file_path):
+    reader = csv.DictReader(open(file_path))
     result = {}
     for row in reader:
         for column, value in row.items():  # consider .iteritems() for Python 2
@@ -57,27 +59,9 @@ def read_csv():
                 result.setdefault(column, []).append(value)
     return result
 
-def add_to_tfrecord(data):
-    if('croppedLeft' in data):
-        croppedLeft = data['croppedLeft']
-        cl_center = data['cl_center']
-        cl_inner_corner = data['cl_inner_corner']
-        cl_outer_corner = data['cl_outer_corner']
-
-
-    if('croppedRight' in data):
-        croppedRight = data['croppedRight']
-        cr_center = data['cr_center']
-        cr_inner_corner = data['cr_inner_corner']
-        cr_outer_corner = data['cr_outer_corner']
-
-
-
-
-
 if __name__ == "__main__":
 
-    result = read_csv()
+    result = read_csv('Data/training/training.csv')
     images = result['Image']
     left_eye_center = list(zip(result['left_eye_center_x'],result["left_eye_center_y"]))
     right_eye_center = list(zip(result["right_eye_center_x"],result["right_eye_center_y"]))
@@ -89,14 +73,19 @@ if __name__ == "__main__":
 
 
     #for i in range(len(images)):
-    for i in range(1):
-        print(i)
-        for j in range(-1,2):
-            for k in range(-1,2):
-                data = aug.process_image(i,j*5,k*5)
+    with tf.io.TFRecordWriter('Data/record.tfrecord') as tfrecord_writer:
+        for i in range(1):
+            for j in range(-1,2):
+                for k in range(-1,2):
+                    data = aug.process_image(i,j*5,k*5)
+                    examples = utils.generate_examples(data)
+                    #show_images(data)
+                    #utils.write_tfrecord(examples,tfrecord_writer)
 
-                show_images(data)
+    dataset = utils.load_dataset('Data/record.tfrecord',False)
 
+    img = next(iter(dataset))
+    cv2.imshow('image',img)
 
     cv2.destroyAllWindows()
 

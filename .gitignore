@@ -9,6 +9,7 @@ __pycache__/
 *.png
 *.mp4
 *.csv
+*.tfrecord
 
 # C extensions
 *.so
