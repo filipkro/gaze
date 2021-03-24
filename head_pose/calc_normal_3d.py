@@ -22,7 +22,7 @@ def find_normal(landmarks):
     mouth_vector = mouth_right-mouth_left
     mouth_mid = mouth_left + mouth_vector/2
 
-    Rm = 0.40
+    Rm = 0.5
     a_vector = mouth_mid - eye_mid
     nose_base = np.round(eye_mid + a_vector*(1-Rm))
     projected_normal = np.array(landmarks['nose']-nose_base)
