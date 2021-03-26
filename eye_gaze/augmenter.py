@@ -42,7 +42,7 @@ class augmenter:
             cornerLeft = (max(int(np.round(centerLeft[0]-16+off_x)),0), max(int(np.round(centerLeft[1])-16+off_y),0))
 
             image = self.convert2image(self.images[i])
-            image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
+            #image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
             croppedLeft= image[cornerLeft[1]:cornerLeft[1]+32,cornerLeft[0]:cornerLeft[0]+32]
 
             cl_center = (self.left_eye_center[i][0]-cornerLeft[0],self.left_eye_center[i][1]-cornerLeft[1])
@@ -60,7 +60,7 @@ class augmenter:
             cornerRight = (max(int(np.round(centerRight[0]-16+off_x)),0), max(int(np.round(centerRight[1])-16+off_y),0))
 
             image = self.convert2image(self.images[i])
-            image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
+            #image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
             croppedRight= image[cornerRight[1]:cornerRight[1]+32,cornerRight[0]:cornerRight[0]+32]
 
             cr_center = (self.right_eye_center[i][0]-cornerRight[0],self.right_eye_center[i][1]-cornerRight[1])

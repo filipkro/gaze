@@ -1,16 +1,20 @@
 import tensorflow as tf
 from functools import partial
+import numpy as np
 
 BATCH_SIZE = 64
 IMAGE_SIZE = [32, 32]
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-def decode_image(image):
-    image = tf.image.decode_jpeg(image, channels=1)
-    image = tf.cast(image, tf.float32)
-    image = tf.reshape(image, IMAGE_SIZE)
-    return image
+def decode_image_old(image):
+    img = np.frombuffer(image.numpy(), dtype='B')
+    img = img.reshape(32,32)  # dimensions of the image
+    img = img.astype(np.uint8)
+    return img
 
+def decode_image(image):
+    #print(type(image))
+    return image
 
 def read_tfrecord(example, labeled):
     tfrecord_format = (
@@ -19,9 +23,14 @@ def read_tfrecord(example, labeled):
             "target": tf.io.FixedLenFeature([], tf.int64),
         }
         if labeled
-        else {"image": tf.io.FixedLenFeature([], tf.string),}
+        else {
+            'image': tf.io.FixedLenFeature([], tf.string),
+            #'center': tf.io.FixedLenFeature([], tf.float32),
+            #'inner': tf.io.FixedLenFeature([], tf.float32),      
+            #'outer': tf.io.FixedLenFeature([], tf.float32),
+        }
     )
-    example = tf.io.parse_single_example(example, tfrecord_format)
+    example = tf.io.parse_single_example(example, tfrecord_format, name='features')
     image = decode_image(example["image"])
     if labeled:
         label = tf.cast(example["target"], tf.int32)
@@ -67,18 +76,18 @@ def generate_examples(data):
     if('croppedLeft' in data):
         example_left = tf.train.Example(features=tf.train.Features(feature={
             'image': image_feature(data['croppedLeft']),
-            'center': landmark_feature(data['cl_center']),
-            'inner': landmark_feature(data['cl_inner_corner']),      
-            'outer': landmark_feature(data['cl_outer_corner']),
+            #'center': landmark_feature(data['cl_center']),
+            #'inner': landmark_feature(data['cl_inner_corner']),      
+            #'outer': landmark_feature(data['cl_outer_corner']),
         }))
         examples.append(example_left)
 
     if('croppedRight' in data):
         example_right = tf.train.Example(features=tf.train.Features(feature={
             'image': image_feature(data['croppedRight']),
-            'center': landmark_feature(data['cr_center']),
-            'inner': landmark_feature(data['cr_inner_corner']),    
-            'outer': landmark_feature(data['cr_outer_corner']),
+            #'center': landmark_feature(data['cr_center']),
+            #'inner': landmark_feature(data['cr_inner_corner']),    
+            #'outer': landmark_feature(data['cr_outer_corner']),
         }))
         examples.append(example_right)
     return examples
@@ -86,3 +95,6 @@ def generate_examples(data):
 def write_tfrecord(examples, writer):
     for example in examples:
         writer.write(example.SerializeToString())
+
+
+#==============================================================#
