@@ -6,39 +6,31 @@ BATCH_SIZE = 64
 IMAGE_SIZE = [32, 32]
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-def decode_image_old(image):
+def decode_image(image):
     img = np.frombuffer(image.numpy(), dtype='B')
     img = img.reshape(32,32)  # dimensions of the image
-    img = img.astype(np.uint8)
-    return img
+    return img.astype(np.uint8)
 
-def decode_image(image):
-    #print(type(image))
-    return image
 
-def read_tfrecord(example, labeled):
+def read_tfrecord(example):
     tfrecord_format = (
         {
-            "image": tf.io.FixedLenFeature([], tf.string),
-            "target": tf.io.FixedLenFeature([], tf.int64),
-        }
-        if labeled
-        else {
-            'image': tf.io.FixedLenFeature([], tf.string),
-            #'center': tf.io.FixedLenFeature([], tf.float32),
-            #'inner': tf.io.FixedLenFeature([], tf.float32),      
-            #'outer': tf.io.FixedLenFeature([], tf.float32),
+            'image': tf.io.FixedLenFeature([], tf.string, default_value=''),
+            'center': tf.io.VarLenFeature(tf.float32),
+            'inner': tf.io.VarLenFeature(tf.float32),      
+            'outer': tf.io.VarLenFeature(tf.float32),
         }
     )
-    example = tf.io.parse_single_example(example, tfrecord_format, name='features')
-    image = decode_image(example["image"])
-    if labeled:
-        label = tf.cast(example["target"], tf.int32)
-        return image, label
-    return image
+    example = tf.io.parse_single_example(example, tfrecord_format, name='features')                                                                                                                                           
+    image = example["image"]
+    center = example['center']
+    inner = example['inner']
+    outer = example['outer']
+
+    return image, center, inner, outer
 
 
-def load_dataset(filename, labeled=True):
+def load_dataset(filename):
     ignore_order = tf.data.Options()
     ignore_order.experimental_deterministic = False  # disable order, increase speed
     dataset = tf.data.TFRecordDataset(
@@ -48,13 +40,13 @@ def load_dataset(filename, labeled=True):
         ignore_order
     )  # uses data as soon as it streams in, rather than in its original order
     dataset = dataset.map(
-        partial(read_tfrecord, labeled=labeled), num_parallel_calls=AUTOTUNE
+        read_tfrecord, num_parallel_calls=AUTOTUNE
     )
     # returns a dataset of (image, label) pairs if labeled=True or just images if labeled=False
     return dataset
 
-def get_dataset(filename, labeled=True):
-    dataset = load_dataset(filename, labeled=labeled)
+def get_dataset(filename):
+    dataset = load_dataset(filename)
     dataset = dataset.shuffle(2048)
     dataset = dataset.prefetch(buffer_size=AUTOTUNE)
     dataset = dataset.batch(BATCH_SIZE)
@@ -76,18 +68,18 @@ def generate_examples(data):
     if('croppedLeft' in data):
         example_left = tf.train.Example(features=tf.train.Features(feature={
             'image': image_feature(data['croppedLeft']),
-            #'center': landmark_feature(data['cl_center']),
-            #'inner': landmark_feature(data['cl_inner_corner']),      
-            #'outer': landmark_feature(data['cl_outer_corner']),
+            'center': landmark_feature(data['cl_center']),
+            'inner': landmark_feature(data['cl_inner_corner']),      
+            'outer': landmark_feature(data['cl_outer_corner']),
         }))
         examples.append(example_left)
 
     if('croppedRight' in data):
         example_right = tf.train.Example(features=tf.train.Features(feature={
             'image': image_feature(data['croppedRight']),
-            #'center': landmark_feature(data['cr_center']),
-            #'inner': landmark_feature(data['cr_inner_corner']),    
-            #'outer': landmark_feature(data['cr_outer_corner']),
+            'center': landmark_feature(data['cr_center']),
+            'inner': landmark_feature(data['cr_inner_corner']),    
+            'outer': landmark_feature(data['cr_outer_corner']),
         }))
         examples.append(example_right)
     return examples
@@ -98,3 +90,22 @@ def write_tfrecord(examples, writer):
 
 
 #==============================================================#
+"""
+    tfrecord_format = (
+        {
+            'image': tf.io.FixedLenFeature([], tf.string),
+            #'center': tf.io.FixedLenFeature([], tf.float32),
+            #'inner': tf.io.FixedLenFeature([], tf.float32),      
+            #'outer': tf.io.FixedLenFeature([], tf.float32),
+        }
+    )
+    example = tf.io.parse_single_example(example, tfrecord_format, name='features')
+    image = example["image"]
+    
+    landmarks = {
+        'center': example['center'],
+        'inner' : example['inner'],
+        'outer': example['outer'],
+    }
+
+"""

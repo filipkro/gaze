@@ -59,17 +59,6 @@ def read_csv(file_path):
                 result.setdefault(column, []).append(value)
     return result
 
-def extract_fn(data_record):
-    features = {
-        # Extract features using the keys set during creation
-        'image':  tf.io.FixedLenFeature([], tf.string),
-        'center': tf.io.FixedLenFeature([], tf.float32),
-        'inner':  tf.io.FixedLenFeature([], tf.float32),      
-        'outer':  tf.io.FixedLenFeature([], tf.float32),
-    }
-    sample = tf.io.parse_single_example(data_record, features)
-    return sample
-
 
 
 if __name__ == "__main__":
@@ -88,19 +77,28 @@ if __name__ == "__main__":
     #for i in range(len(images)):
     with tf.io.TFRecordWriter('Data/record.tfrecord') as tfrecord_writer:
         for i in range(1):
-            for j in range(-1,2):
-                for k in range(-1,2):
+            for j in range(1): #-1,2
+                for k in range(1): #-1,2
                     data = aug.process_image(i,j*5,k*5)
                     examples = utils.generate_examples(data)
                     #show_images(data)
                     utils.write_tfrecord(examples,tfrecord_writer)
-    dataset = utils.load_dataset('Data/record.tfrecord',False)
-    image_batch = next(iter(dataset))
-    print("Type:",type(image_batch.numpy()))
-    #print(image_batch.numpy())
-    img = np.frombuffer(image_batch.numpy(), dtype='B')
-    img = img.reshape(32,32)  # dimensions of the image
-    img = img.astype(np.uint8)
-    cv2.imshow('image',img)
+    dataset = utils.load_dataset('Data/record.tfrecord')
+    image, center, inner, outer = next(iter(dataset))
+    print("center:", center)
+    print("inner", inner)
+    print("outer", outer)
+
+    cv2.imshow('image',utils.decode_image(image))
     cv2.waitKey(0)
 
+
+    filenames = ['Data/record.tfrecord']
+    raw_dataset = tf.data.TFRecordDataset(filenames)
+
+"""
+    for raw_record in raw_dataset.take(1):
+        example = tf.train.Example()
+        example.ParseFromString(raw_record.numpy())
+        print(example)
+"""
