@@ -86,8 +86,8 @@ if __name__ == "__main__":
     dataset = utils.load_dataset('Data/record.tfrecord')
     image, center, inner, outer = next(iter(dataset))
     print("center:", center)
-    print("inner", inner)
-    print("outer", outer)
+    print("inner:", inner)
+    print("outer:", outer)
 
     cv2.imshow('image',utils.decode_image(image))
     cv2.waitKey(0)
