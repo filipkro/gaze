@@ -16,18 +16,14 @@ def read_tfrecord(example):
     tfrecord_format = (
         {
             'image': tf.io.FixedLenFeature([], tf.string, default_value=''),
-            'center': tf.io.VarLenFeature(tf.float32),
-            'inner': tf.io.VarLenFeature(tf.float32),      
-            'outer': tf.io.VarLenFeature(tf.float32),
+            'labels': tf.io.VarLenFeature(tf.float32),
         }
     )
     example = tf.io.parse_single_example(example, tfrecord_format, name='features')                                                                                                                                           
-    image = example["image"]
-    center = example['center']
-    inner = example['inner']
-    outer = example['outer']
+    image = tf.cast(example["image"],tf.string)
+    labels = tf.cast(example["labels"], tf.float32)
 
-    return image, center, inner, outer
+    return image, labels
 
 
 def load_dataset(filename):
@@ -54,10 +50,8 @@ def get_dataset(filename):
 
 #=======================================================================#
 
-def landmark_feature(value):
-    value = list(value)
+def landmark_features(value):
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
-
 
 def image_feature(value):
     value = [value.tobytes()]
@@ -66,20 +60,20 @@ def image_feature(value):
 def generate_examples(data):
     examples = []
     if('croppedLeft' in data):
+        label_list = [data['cl_center'][0],data['cl_center'][1],data['cl_inner_corner'][0],data['cl_inner_corner'][1],
+            data['cl_outer_corner'][0],data['cl_outer_corner'][1]]
         example_left = tf.train.Example(features=tf.train.Features(feature={
             'image': image_feature(data['croppedLeft']),
-            'center': landmark_feature(data['cl_center']),
-            'inner': landmark_feature(data['cl_inner_corner']),      
-            'outer': landmark_feature(data['cl_outer_corner']),
+            'labels': landmark_features(label_list),
         }))
         examples.append(example_left)
 
     if('croppedRight' in data):
+        label_list = [data['cr_center'][0],data['cr_center'][1],data['cr_inner_corner'][0],data['cr_inner_corner'][1],
+            data['cr_outer_corner'][0],data['cr_outer_corner'][1]]
         example_right = tf.train.Example(features=tf.train.Features(feature={
             'image': image_feature(data['croppedRight']),
-            'center': landmark_feature(data['cr_center']),
-            'inner': landmark_feature(data['cr_inner_corner']),    
-            'outer': landmark_feature(data['cr_outer_corner']),
+            'labels': landmark_features(label_list),
         }))
         examples.append(example_right)
     return examples

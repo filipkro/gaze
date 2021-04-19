@@ -39,7 +39,19 @@ class augmenter:
         #Left eye
         if left_true:
             centerLeft = ((self.left_eye_outer_corner[i][0]+self.left_eye_inner_corner[i][0])/2, (self.left_eye_outer_corner[i][1]+self.left_eye_inner_corner[i][1])/2)
-            cornerLeft = (max(int(np.round(centerLeft[0]-16+off_x)),0), max(int(np.round(centerLeft[1])-16+off_y),0))
+
+            cl_x = int(np.round(centerLeft[0]-16+off_x))
+            if (cl_x < 0):
+                cl_x = 0
+            if (cl_x + 32 > 96):
+                cl_x = 64
+            cl_y = int(np.round(centerLeft[1]-16+off_y))
+            if (cl_y < 0):
+                cl_y = 0
+            if (cl_y + 32 > 96):
+                cl_y = 64
+
+            cornerLeft = (cl_x,cl_y)
 
             image = self.convert2image(self.images[i])
             #image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
@@ -57,7 +69,19 @@ class augmenter:
         #Right eye
         if right_true:
             centerRight = ((self.right_eye_outer_corner[i][0]+self.right_eye_inner_corner[i][0])/2, (self.right_eye_outer_corner[i][1]+self.right_eye_inner_corner[i][1])/2)
-            cornerRight = (max(int(np.round(centerRight[0]-16+off_x)),0), max(int(np.round(centerRight[1])-16+off_y),0))
+            
+            cr_x = int(np.round(centerRight[0]-16+off_x))
+            if (cr_x < 0):
+                cr_x = 0
+            if (cr_x + 32 > 96):
+                cr_x = 64
+            cr_y = int(np.round(centerRight[1]-16+off_y))
+            if (cr_y < 0):
+                cr_y = 0
+            if (cr_y + 32 > 96):
+                cr_y = 64
+
+            cornerRight = (cr_x,cr_y)
 
             image = self.convert2image(self.images[i])
             #image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
@@ -73,4 +97,3 @@ class augmenter:
             processed_data['cr_outer_corner'] = cr_outer_corner
 
         return processed_data
-

@@ -2,8 +2,7 @@ import csv
 import cv2
 import numpy as np
 from augmenter import augmenter
-import tensorflow as tf
-import tfrecord_utils as utils
+import random
 
 def show_images(data):
     if('croppedLeft' in data):
@@ -15,7 +14,7 @@ def show_images(data):
         cv2.circle(croppedLeft, (int(np.round(cl_outer_corner[0])),int(np.round(cl_outer_corner[1]))), 0, (0,255,255))
         cv2.circle(croppedLeft, (int(np.round(cl_inner_corner[0])),int(np.round(cl_inner_corner[1]))), 0, (0,255,255))
 
-        scale_percent = 400 # percent of original size
+        scale_percent = 100 # percent of original size
         width = int(croppedLeft.shape[1] * scale_percent / 100)
         height = int(croppedLeft.shape[0] * scale_percent / 100)
         dim = (width, height)
@@ -35,7 +34,7 @@ def show_images(data):
         cv2.circle(croppedRight, (int(np.round(cr_inner_corner[0])),int(np.round(cr_inner_corner[1]))), 0, (0,255,255))
 
 
-        scale_percent = 400 # percent of original size
+        scale_percent = 100 # percent of original size
         width = int(croppedRight.shape[1] * scale_percent / 100)
         height = int(croppedRight.shape[0] * scale_percent / 100)
         dim = (width, height)
@@ -59,6 +58,20 @@ def read_csv(file_path):
                 result.setdefault(column, []).append(value)
     return result
 
+def build_x_y(data, x, y):
+    if('croppedLeft' in data):
+        labels_left = [data['cl_center'][0],data['cl_center'][1],data['cl_inner_corner'][0],data['cl_inner_corner'][1],
+            data['cl_outer_corner'][0],data['cl_outer_corner'][1]]
+        x.append(np.reshape(data['croppedLeft'],(32,32,1)))
+        y.append(np.array(labels_left))
+
+    if('croppedRight' in data):
+        labels_right = [data['cr_center'][0],data['cr_center'][1],data['cr_inner_corner'][0],data['cr_inner_corner'][1],
+            data['cr_outer_corner'][0],data['cr_outer_corner'][1]]
+        x.append(np.reshape(data['croppedRight'],(32,32,1)))
+        y.append(np.array(labels_right))
+
+
 
 
 if __name__ == "__main__":
@@ -74,31 +87,25 @@ if __name__ == "__main__":
     aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,right_eye_inner_corner,right_eye_outer_corner)
 
 
-    #for i in range(len(images)):
-    with tf.io.TFRecordWriter('Data/record.tfrecord') as tfrecord_writer:
-        for i in range(1):
-            for j in range(1): #-1,2
-                for k in range(1): #-1,2
-                    data = aug.process_image(i,j*5,k*5)
-                    examples = utils.generate_examples(data)
-                    #show_images(data)
-                    utils.write_tfrecord(examples,tfrecord_writer)
-    dataset = utils.load_dataset('Data/record.tfrecord')
-    image, center, inner, outer = next(iter(dataset))
-    print("center:", center)
-    print("inner:", inner)
-    print("outer:", outer)
+    print("Generating training data")
+    size = len(images)
+    x = []
+    y = []
 
-    cv2.imshow('image',utils.decode_image(image))
-    cv2.waitKey(0)
+    for i in range(size):
+        if(i%100==0):
+            print(i,"/",size)
+        data = aug.process_image(i,0,0)
+        build_x_y(data,x,y)
 
-
-    filenames = ['Data/record.tfrecord']
-    raw_dataset = tf.data.TFRecordDataset(filenames)
-
-"""
-    for raw_record in raw_dataset.take(1):
-        example = tf.train.Example()
-        example.ParseFromString(raw_record.numpy())
-        print(example)
-"""
+        for k in range(4):
+            r1 = random.randint(-5,5)
+            r2 = random.randint(-5,5)
+            data = aug.process_image(i,r1,r2)
+            build_x_y(data,x,y)
+    print("Data generated")
+    x = np.array(x)
+    y = np.array(y)
+    print("X:",np.shape(x))
+    print("Y:",np.shape(y))
+    np.savez("Data/generated_training", x=x, y=y)

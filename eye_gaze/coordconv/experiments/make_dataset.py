@@ -17,7 +17,7 @@ if not os.path.exists('data-quadrant/'):
 if __name__ == '__main__':
     import tensorflow as tf
     np.random.seed(0)
-    tf.set_random_seed(0)
+    tf.random.set_seed(0)
 
     # From https://arxiv.org/pdf/1807.03247.pdf
     onehots = np.pad(np.eye(3136, dtype='float32').reshape((3136, 56, 56, 1)),
