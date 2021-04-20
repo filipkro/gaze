@@ -22,7 +22,7 @@ class augmenter:
         img = img.reshape(96,96)  # dimensions of the image
         return img.astype(np.uint8) # return the image
 
-    def process_image(self, i, off_x, off_y):
+    def crop_image(self, i, off_x, off_y):
         lec = self.left_eye_center[i][0] + self.left_eye_center[i][1]
         lec1 = self.left_eye_outer_corner[i][0] + self.left_eye_outer_corner[i][1]
         lec2 = self.left_eye_inner_corner[i][0] + self.left_eye_inner_corner[i][0]
@@ -97,3 +97,15 @@ class augmenter:
             processed_data['cr_outer_corner'] = cr_outer_corner
 
         return processed_data
+    
+    def blur_image(self, i, r):
+        processed_data = cv2.GaussianBlur(i,(r,r),cv2.BORDER_DEFAULT)
+        
+        return processed_data
+
+    def down_up_sample_image(self, i):
+        processed_data = cv2.resize(i, (32,32), interpolation = cv2.INTER_LINEAR)
+        
+        return processed_data
+        
+        

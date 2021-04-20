@@ -83,6 +83,16 @@ def data_from_csv(path):
     return images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner
 
 def generate_data(path, save_path, augmentation=True):
+    images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv('Data/training/training.csv')
+    
+    i = images[0]
+    
+    aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,
+                 right_eye_inner_corner,right_eye_outer_corner)
+
+    processed_image = aug.blur_image(i,5)
+    cv2.imshow(processed_image)
+    """
     images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv(path)
     aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,right_eye_inner_corner,right_eye_outer_corner)
 
@@ -106,6 +116,7 @@ def generate_data(path, save_path, augmentation=True):
     print("X:",np.shape(x))
     print("Y:",np.shape(y))
     np.savez(save_path, x=x, y=y)
+    """
 
 
 if __name__ == "__main__":
@@ -117,34 +128,4 @@ if __name__ == "__main__":
     #generate_data('Data/test/test.csv',augmentation=False)
     #print("Test data generated")
 
-
-"""
-    images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv('Data/training/training.csv')
-    aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,right_eye_inner_corner,right_eye_outer_corner)
-
-
-    print("Generating training data")
-    #size = len(images)
-    size = 10
-    x = []
-    y = []
-
-    for i in range(size):
-        if(i%100==0):
-            print(i,"/",size)
-        data = aug.process_image(i,0,0)
-        build_x_y(data,x,y)
-
-        for k in range(4):
-            r1 = random.randint(-5,5)
-            r2 = random.randint(-5,5)
-            data = aug.process_image(i,r1,r2)
-            build_x_y(data,x,y)
-    print("Data generated")
-    x = np.array(x)
-    y = np.array(y)
-    print("X:",np.shape(x))
-    print("Y:",np.shape(y))
-    np.savez("Data/generated_training", x=x, y=y)
-"""
 
