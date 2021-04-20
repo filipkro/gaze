@@ -71,12 +71,8 @@ def build_x_y(data, x, y):
         x.append(np.reshape(data['croppedRight'],(32,32,1)))
         y.append(np.array(labels_right))
 
-
-
-
-if __name__ == "__main__":
-
-    result = read_csv('Data/training/training.csv')
+def data_from_csv(path):
+    result = read_csv(path)
     images = result['Image']
     left_eye_center = list(zip(result['left_eye_center_x'],result["left_eye_center_y"]))
     right_eye_center = list(zip(result["right_eye_center_x"],result["right_eye_center_y"]))
@@ -84,11 +80,52 @@ if __name__ == "__main__":
     left_eye_outer_corner = list(zip(result['left_eye_outer_corner_x'],result["left_eye_outer_corner_y"]))
     right_eye_inner_corner = list(zip(result['right_eye_inner_corner_x'],result["right_eye_inner_corner_y"]))
     right_eye_outer_corner = list(zip(result['right_eye_outer_corner_x'],result["right_eye_outer_corner_y"]))
+    return images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner
+
+def generate_data(path, save_path, augmentation=True):
+    images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv(path)
+    aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,right_eye_inner_corner,right_eye_outer_corner)
+
+    size = len(images)
+    x = []
+    y = []
+
+    for i in range(size):
+        if(i%100==0):
+            print(i,"/",size)
+        data = aug.process_image(i,0,0)
+        build_x_y(data,x,y)
+        if(augmentation):
+            for k in range(4):
+                r1 = random.randint(-5,5)
+                r2 = random.randint(-5,5)
+                data = aug.process_image(i,r1,r2)
+                build_x_y(data,x,y)
+    x = np.array(x)
+    y = np.array(y)
+    print("X:",np.shape(x))
+    print("Y:",np.shape(y))
+    np.savez(save_path, x=x, y=y)
+
+
+if __name__ == "__main__":
+    print("Generating training data")
+    generate_data('Data/training/training.csv',"Data/generated/generated_training")
+    print("Training data generated")
+
+    #print("Generating test data")
+    #generate_data('Data/test/test.csv',augmentation=False)
+    #print("Test data generated")
+
+
+"""
+    images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv('Data/training/training.csv')
     aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,right_eye_inner_corner,right_eye_outer_corner)
 
 
     print("Generating training data")
-    size = len(images)
+    #size = len(images)
+    size = 10
     x = []
     y = []
 
@@ -109,3 +146,5 @@ if __name__ == "__main__":
     print("X:",np.shape(x))
     print("Y:",np.shape(y))
     np.savez("Data/generated_training", x=x, y=y)
+"""
+
