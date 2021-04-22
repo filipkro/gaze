@@ -6,15 +6,11 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import activations
 from tensorflow import keras
-import tfrecord_utils as utils
 import tensorflow as tf
 import numpy as np
 
-def train(x_train,y_train):
-    batch = 10
+def compile_model():
     ip = Input(shape=(32, 32, 1))
-
-
     x = CoordinateChannel2D()(ip)
     x = Conv2D(32, (3, 3), padding='same', activation='relu')(x)
     x = MaxPooling2D((2,2))(x)
@@ -43,28 +39,35 @@ def train(x_train,y_train):
     optimizer = Adam(lr=1e-2)
     model.compile(optimizer, loss='mse', metrics=['accuracy'])
 
+    return model
+
+def train(x_train,y_train):
+
+    model = compile_model()
+
     initial_learning_rate = 0.01
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
         initial_learning_rate, decay_steps=20, decay_rate=0.96, staircase=True
     )
 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        "Data/Models/CorCNN.h5", save_best_only=True
+        "Data/Models/CorCNN_check", save_best_only=True
     )
 
     early_stopping = tf.keras.callbacks.EarlyStopping(
         patience=10, restore_best_weights=True
     )
 
-    history = model.fit(x_train,y_train,epochs=15, validation_split=0.3)
+    history = model.fit(x_train,y_train,epochs=20, callbacks=[checkpoint, early_stopping], validation_split=0.30)
 
-    model.save('Data/Models/CorCNN.h5')
+
+    tf.keras.models.save_model(model,'Data/Models/CorCNN.model')
 
 
 
 if __name__ == "__main__":
     
-    npzfile = np.load("Data/generated_training.npz")
+    npzfile = np.load("Data/generated/generated_training.npz")
     sorted(npzfile.files)
     ['x', 'y']
     x = npzfile['x']
