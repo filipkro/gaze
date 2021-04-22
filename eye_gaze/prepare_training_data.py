@@ -85,13 +85,24 @@ def data_from_csv(path):
 def generate_data(path, save_path, augmentation=True):
     images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv('Data/training/training.csv')
     
-    i = images[0]
-    
     aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,
                  right_eye_inner_corner,right_eye_outer_corner)
+    
+    processed_images = aug.process_image(0, 4, 4, 7, 0.5)
+    
+    for k in processed_images:
+        cv2.imshow("window", k['croppedLeft'])
 
-    processed_image = aug.blur_image(i,5)
-    cv2.imshow(processed_image)
+        cv2.waitKey(0)
+        # closing all open windows
+        cv2.destroyAllWindows()
+        
+        cv2.imshow("window", k['croppedRight'])
+
+        cv2.waitKey(0)
+        # closing all open windows
+        cv2.destroyAllWindows()
+    
     """
     images, left_eye_center, left_eye_inner_corner, left_eye_outer_corner, right_eye_center, right_eye_inner_corner, right_eye_outer_corner = data_from_csv(path)
     aug = augmenter(images,left_eye_center,left_eye_inner_corner,left_eye_outer_corner,right_eye_center,right_eye_inner_corner,right_eye_outer_corner)
