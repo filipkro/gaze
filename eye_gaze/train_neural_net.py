@@ -27,7 +27,7 @@ def compile_model():
     x = BatchNormalization()(x)
     x = Dense(512, activation='relu')(x)
     x = Dense(512, activation='relu')(x)
-    x = Dropout(0.25)(x)
+    x = Dropout(0.20)(x)
     x = Flatten()(x)
     x = Dense(6, activation='linear')(x)
     #x = Activation(activations.linear)(x)
@@ -45,10 +45,6 @@ def train(x_train,y_train):
 
     model = compile_model()
 
-    initial_learning_rate = 0.01
-    lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-        initial_learning_rate, decay_steps=20, decay_rate=0.96, staircase=True
-    )
 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         "Data/Models/CorCNN_check", save_best_only=True

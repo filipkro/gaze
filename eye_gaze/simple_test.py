@@ -35,13 +35,11 @@ if __name__ == "__main__":
 
     model = keras.models.load_model('Data/Models/CorCNN.model')
     result = read_csv('Data/test/test.csv')
-    for i in range(1):
+    for i in range(10):
         pixels = result['Image'][i]
         image = convert2image(pixels)
         x = 15
         y = 20
-        cv2.imshow("xx",image)
-        cv2.waitKey(0)
         eye = image[y:y+32,x:x+32]
         input = np.reshape(eye,(32,32,1))
         input = np.expand_dims(input, axis=0)

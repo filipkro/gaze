@@ -100,78 +100,79 @@ class augmenter:
 
         return processed_data
     
-    def blur_image(self, i, kernel_size):
-        processed_data = cv2.GaussianBlur(i,(kernel_size,kernel_size),0)
-        
-        return processed_data
+    def blur_image(self, pd, kernel_size):
+        if ('croppedLeft' in pd):
+            pd['croppedLeft'] = cv2.GaussianBlur(pd['croppedLeft'],(kernel_size,kernel_size),0)
+        if ('croppedRight' in pd):
+            pd['croppedRight'] = cv2.GaussianBlur(pd['croppedRight'],(kernel_size,kernel_size),0)
+        return pd
 
-    def down_up_sample_image(self, i, scale):
-        original_dim = (int(i.shape[1]), int(i.shape[0]))
-        width = int(i.shape[1] * scale)
-        height = int(i.shape[0] * scale)
-        dim = (width, height)
-        i = cv2.resize(i, dim, interpolation = cv2.INTER_LINEAR)
-        processed_data = cv2.resize(i, original_dim, interpolation = cv2.INTER_LINEAR)
+    def down_up_sample_image(self, pd, scale):
+        if ('croppedLeft' in pd):
+            original_dim = (int(pd['croppedLeft'].shape[1]), int(pd['croppedLeft'].shape[0]))
+            width = int(pd['croppedLeft'].shape[1] * scale)
+            height = int(pd['croppedLeft'].shape[0] * scale)
+            dim = (width, height)
+            pd['croppedLeft'] = cv2.resize(pd['croppedLeft'], dim, interpolation = cv2.INTER_LINEAR)
+            pd['croppedLeft'] = cv2.resize(pd['croppedLeft'], original_dim, interpolation = cv2.INTER_LINEAR)
+
+        if ('croppedRight' in pd):
+            original_dim = (int(pd['croppedRight'].shape[1]), int(pd['croppedRight'].shape[0]))
+            width = int(pd['croppedRight'].shape[1] * scale)
+            height = int(pd['croppedRight'].shape[0] * scale)
+            dim = (width, height)
+            pd['croppedRight'] = cv2.resize(pd['croppedRight'], dim, interpolation = cv2.INTER_LINEAR)
+            pd['croppedRight'] = cv2.resize(pd['croppedRight'], original_dim, interpolation = cv2.INTER_LINEAR)
         
-        return processed_data
+        return pd
     
-    def mirror_image(self, i):
-        processed_data = {}
-        if ('croppedLeft' in self.crop_image(i, 0, 0)):
-            processed_data['croppedLeft'] = cv2.flip(self.convert2image(self.images[i])['croppedLeft'],1)
-            processed_data['cl_center'] = (convert2image(self.images[i]).shape[0]-self.left_eye_center[i][0], self.left_eye_center[i][1])
-            processed_data['cl_inner_corner'] = (convert2image(self.images[i]).shape[0]-self.left_eye_inner_corner[i][0], self.left_eye_inner_corner[i][1])
-            processed_data['cr_outer_corner'] = (convert2image(self.images[i]).shape[0]-self.left_eye_outer_corner[i][0], self.left_eye_inner_corner[i][1])
-            
-        if ('croppedRight' in self.crop_image(i, 0, 0)):
-            processed_data['croppedRight'] = cv2.flip(self.convert2image(self.images[i])['croppedRight'],1)
-            processed_data['cr_center'] = (convert2image(self.images[i]).shape[0]-self.right_eye_center[i][0], self.right_eye_center[i][1])
-            processed_data['cr_inner_corner'] = (convert2image(self.images[i]).shape[0]-self.right_eye_inner_corner[i][0], self.Right_eye_inner_corner[i][1])
-            processed_data['cr_outer_corner'] = (convert2image(self.images[i]).shape[0]-self.right_eye_outer_corner[i][0], self.right_eye_inner_corner[i][1])
-            
-        return processed_data
+    def mirror_image(self, pd):
+        if ('croppedLeft' in pd):
+            pd['croppedLeft'] = cv2.flip(pd['croppedLeft'],1)
+            pd['cl_center'] = (pd['croppedLeft'].shape[0]-pd['cl_center'][0], pd['cl_center'][1])
+            pd['cl_inner_corner'] = (pd['croppedLeft'].shape[0]-pd['cl_inner_corner'][0], pd['cl_inner_corner'][1])
+            pd['cl_outer_corner'] = (pd['croppedLeft'].shape[0]-pd['cl_outer_corner'][0], pd['cl_outer_corner'][1])
+
+        if ('croppedRight' in pd):
+            pd['croppedRight'] = cv2.flip(pd['croppedRight'],1)
+            pd['cr_center'] = (pd['croppedRight'].shape[0]-pd['cr_center'][0], pd['cr_center'][1])
+            pd['cr_inner_corner'] = (pd['croppedRight'].shape[0]-pd['cr_inner_corner'][0], pd['cr_inner_corner'][1])
+            pd['cr_outer_corner'] = (pd['croppedRight'].shape[0]-pd['cr_outer_corner'][0], pd['cr_outer_corner'][1])
+
+        return pd
         
     def process_image(self, i, off_x, off_y, kernel_size, scale):
-        image_list = []
-        image_list2 = []
-        image_list.append(self.crop_image(i, 0, 0))
+        pd_list = []
+        pd_list.append(self.crop_image(i, 0, 0))
         
-        
-        for k in range(3):
+        for k in range(4):
             rand_off_x = random.randint(-off_x,off_x)
             rand_off_y = random.randint(-off_y,off_y)
             
-            image_list.append(self.crop_image(i, rand_off_x, rand_off_y))
-            
-        for image in image_list:
-            rand_kernel_size = random.randrange(1, kernel_size, 2)
-            rand_scale = random.uniform(scale, 0.9)
-            
-            if ('croppedLeft' in image):
-                image_list.append(self.mirror_image(self.crop_image(i, 0, 0)['croppedLeft']))
-                new_image = copy.deepcopy(image)
-                new_image['croppedLeft'] = self.blur_image(new_image['croppedLeft'], rand_kernel_size)
-                image_list2.append(new_image)
-                
-                new_image2 = copy.deepcopy(image)
-                new_image2['croppedLeft'] = self.down_up_sample_image(new_image2['croppedLeft'], rand_scale)
-                image_list2.append(new_image2)
+            pd_list.append(self.crop_image(i, rand_off_x, rand_off_y))
         
-            rand_kernel_size = random.randrange(1, kernel_size, 2)
-            rand_scale = random.uniform(scale, 0.9)
-            
-            if ('croppedRight' in image):
-                image_list.append(self.mirror_image(self.crop_image(i, 0, 0)['croppedRight']))
-                new_image = copy.deepcopy(image)
-                new_image['croppedRight'] = self.blur_image(new_image['croppedRight'], rand_kernel_size)
-                image_list2.append(new_image)
-                
-                new_image2 = copy.deepcopy(image)
-                new_image2['croppedRight'] = self.down_up_sample_image(new_image2['croppedRight'], rand_scale)
-                image_list2.append(new_image2)
-                
-        image_list = image_list + image_list2
+        temp_list = []
+        for pd in pd_list:
+            new_pd = copy.deepcopy(pd)
+            temp_list.append(self.mirror_image(new_pd))
+
+        pd_list += temp_list
+
+        pd_list2 = []
+
+        for enum, pd in enumerate(pd_list):
+            if(enum%2 == 0):
+                rand_kernel_size = random.randrange(1, kernel_size, 2)
+                rand_scale = random.uniform(scale, 0.9)
+                new_pd = copy.deepcopy(pd)
+                pd_list2.append(self.blur_image(new_pd, rand_kernel_size))
+            else:    
+                new_pd2 = copy.deepcopy(pd)
+                pd_list2.append(self.down_up_sample_image(new_pd2, rand_scale))
+ 
+        pd_list = pd_list + pd_list2
         
-        return image_list
+        random.shuffle(pd_list)
+        return pd_list
         
         
