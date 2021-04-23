@@ -10,6 +10,8 @@ __pycache__/
 *.mp4
 *.csv
 *.tfrecord
+*.pyz
+*.model
 
 # C extensions
 *.so
