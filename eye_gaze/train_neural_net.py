@@ -11,11 +11,11 @@ import numpy as np
 
 def compile_model():
     ip = Input(shape=(32, 32, 1))
-    x = CoordinateChannel2D()(ip)
-    x = Conv2D(32, (3, 3), padding='same', activation='relu')(x)
+    #x = CoordinateChannel2D()(ip)
+    x = Conv2D(32, (3, 3), padding='same', activation='relu')(ip)
     x = MaxPooling2D((2,2))(x)
     x = BatchNormalization()(x)
-    x = CoordinateChannel2D(use_radius=True)(x)
+    #x = CoordinateChannel2D(use_radius=True)(x)
     x = Conv2D(64, (3, 3), padding='same', activation='relu')(x)
     x = MaxPooling2D((2,2))(x)
     x = BatchNormalization()(x)
@@ -27,7 +27,7 @@ def compile_model():
     x = BatchNormalization()(x)
     x = Dense(512, activation='relu')(x)
     x = Dense(512, activation='relu')(x)
-    x = Dropout(0.20)(x)
+    #x = Dropout(0.20)(x)
     x = Flatten()(x)
     x = Dense(6, activation='linear')(x)
     #x = Activation(activations.linear)(x)
@@ -54,18 +54,28 @@ def train(x_train,y_train):
         patience=10, restore_best_weights=True
     )
 
-    history = model.fit(x_train,y_train,epochs=20, callbacks=[checkpoint, early_stopping], validation_split=0.30)
+    history = model.fit(x_train,y_train, epochs=10, callbacks=[checkpoint, early_stopping], validation_split=0.1765)
 
 
     tf.keras.models.save_model(model,'Data/Models/CorCNN.model')
 
+def test(x,y):
+    model = keras.models.load_model('Data/Models/CorCNN.model')
+    score=model.evaluate(x, y, verbose=1)
+    print(score)
+    print(f'Test loss: {score[0]} / Test accuracy: {score[1]}')
 
-
-if __name__ == "__main__":
-    
+def load(path):
     npzfile = np.load("Data/generated/generated_training.npz")
     sorted(npzfile.files)
     ['x', 'y']
     x = npzfile['x']
     y = npzfile['y']
+    return x,y
+
+if __name__ == "__main__":
+    
+    x, y = load("Data/generated/generated_training.npz")
     train(x,y)
+    x, y = load("Data/generated/generated_test.npz")
+    test(x,y)
