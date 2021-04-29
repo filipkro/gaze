@@ -14,7 +14,7 @@ if __name__ == '__main__':
     detector = MTCNN()
 
     # define a video capture object 
-    video = cv2.VideoCapture(0)
+    video = cv2.VideoCapture(1)
     
     # Read a new frame
     ok, frame = video.read()
@@ -32,8 +32,8 @@ if __name__ == '__main__':
     left_eye = faces[0]['keypoints']['left_eye']
     right_eye = faces[0]['keypoints']['right_eye']
     side = right_eye[0]-left_eye[0]
-    bbox1 = [left_eye[0]-side/2,left_eye[1]-side/2,side,side*0.75]
-    bbox2 = [right_eye[0]-side/2,right_eye[1]-side/2,side,side*0.75]
+    bbox1 = [left_eye[0]-side/2,left_eye[1]-side/2,side,side]
+    bbox2 = [right_eye[0]-side/2,right_eye[1]-side/2,side,side]
     
     # Initialize tracker with first frame and bounding box
     ok1 = tracker1.init(frame, bbox1)
@@ -88,8 +88,8 @@ if __name__ == '__main__':
             left_eye = faces[0]['keypoints']['left_eye']
             right_eye = faces[0]['keypoints']['right_eye']
             side = right_eye[0]-left_eye[0]
-            bbox1 = [left_eye[0]-side/2,left_eye[1]-side/2,side,side*0.75]
-            bbox2 = [right_eye[0]-side/2,right_eye[1]-side/2,side,side*0.75]
+            bbox1 = [left_eye[0]-side/2,left_eye[1]-side/2,side,side]
+            bbox2 = [right_eye[0]-side/2,right_eye[1]-side/2,side,side]
             
             tracker1 = cv2.TrackerKCF_create()
             tracker2 = cv2.TrackerKCF_create()
