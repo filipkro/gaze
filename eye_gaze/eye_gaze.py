@@ -12,9 +12,6 @@ class eye_gaze:
         image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
         p1 = (pred[0], pred[1])
         p2 = (int(np.round(p1[0]+normal[0])), int(np.round(p1[1]+normal[1])))
-        print('p1',p1)
-        print('p2',p2)
-        print('normal',normal)
         cv2.line(image, p1, p2, (0,255,255), 1)
         return image
 
@@ -39,8 +36,4 @@ class eye_gaze:
         pupil = np.array([pred[0],pred[1]])
         dps = pupil-eye_mid
         dps = np.array([dps[0],dps[1],0])
-        image = self.draw_normal(image,dps,pred)
-        image = self.draw_landmarks(image,pred,ground_truth=False)
-        cv2.imshow("test",image)
-        cv2.waitKey(0)
-        return dps
+        return dps, pred
