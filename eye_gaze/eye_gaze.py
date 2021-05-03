@@ -30,8 +30,8 @@ class eye_gaze:
         image = eye.copy()
         eye = np.expand_dims(eye, axis=0)
         pred = self.model.predict(eye)[0]
-        eye_mid_x = pred[2]+abs(pred[2]-pred[4])/2
-        eye_mid_y = pred[3]+abs(pred[3]-pred[5])/2
+        eye_mid_x = (pred[2]+pred[4])/2
+        eye_mid_y = (pred[3]+pred[5])/2
         eye_mid = np.array([eye_mid_x,eye_mid_y])
         pupil = np.array([pred[0],pred[1]])
         dps = pupil-eye_mid
