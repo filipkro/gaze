@@ -26,13 +26,25 @@ class eye_gaze:
         image = cv2.circle(image, (int(np.round(landmarks[4])),int(np.round(landmarks[5]))), 0, color1)
         return image
 
+    def find_true_center(self,pred):
+        eye_mid_x = (pred[2]+pred[4])/2
+        eye_mid_y = (pred[3]+pred[5])/2
+        eye_mid = np.array([eye_mid_x,eye_mid_y])
+        """
+        corner_vector = (pred[2]-pred[4],pred[3]-pred[5])
+        pupil = pred[0:2]
+        m_to_p = pupil-eye_mid
+        proj = np.dot(m_to_p,corner_vector)/np.linalg.norm(corner_vector)
+        offset = m_to_p-proj
+        eye_mid += offset      //TODO!!!
+        """
+        return eye_mid
+
     def calc_dps(self,eye):
         image = eye.copy()
         eye = np.expand_dims(eye, axis=0)
         pred = self.model.predict(eye)[0]
-        eye_mid_x = (pred[2]+pred[4])/2
-        eye_mid_y = (pred[3]+pred[5])/2
-        eye_mid = np.array([eye_mid_x,eye_mid_y])
+        eye_mid = self.find_true_center(pred)
         pupil = np.array([pred[0],pred[1]])
         dps = pupil-eye_mid
         dps = np.array([dps[0],dps[1],0])
