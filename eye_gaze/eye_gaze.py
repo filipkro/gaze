@@ -30,15 +30,23 @@ class eye_gaze:
         eye_mid_x = (pred[2]+pred[4])/2
         eye_mid_y = (pred[3]+pred[5])/2
         eye_mid = np.array([eye_mid_x,eye_mid_y])
-        """
-        corner_vector = (pred[2]-pred[4],pred[3]-pred[5])
-        pupil = pred[0:2]
-        m_to_p = pupil-eye_mid
-        proj = np.dot(m_to_p,corner_vector)/np.linalg.norm(corner_vector)
-        offset = m_to_p-proj
-        eye_mid += offset      //TODO!!!
-        """
+        
+        corner_vector = np.array([pred[4]-pred[2],pred[5]-pred[3]])
+        ortho = np.array([corner_vector[1],-corner_vector[0]])
+        if (ortho[1]>0):
+            ortho *= -1
+        ortho /= np.linalg.norm(ortho)
+        eye_mid = (eye_mid + 1.3*ortho)      #TODO!!!
         return eye_mid
+
+        """
+        corner_vector = np.array([pred[4]-pred[2],pred[5]-pred[3]])
+        pupil = np.array(pred[0:2])
+        m_to_p = pupil-eye_mid
+        proj = (np.dot(m_to_p,corner_vector)/np.linalg.norm(corner_vector))*corner_vector
+        offset = m_to_p-proj
+        eye_mid = (eye_mid - 0.5*offset)*2/3      #TODO!!!
+        """
 
     def calc_dps(self,eye):
         image = eye.copy()

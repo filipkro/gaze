@@ -31,7 +31,7 @@ def draw_landmarks(image, points, corner):
 if __name__ == '__main__':
 
     detector = MTCNN()
-    cap = cv2.VideoCapture('Data/videos/vid3.mp4')
+    cap = cv2.VideoCapture('Data/videos/vid2.mp4')
     ret, pixels = cap.read()
     scale_percent = 50 # percent of original size
     width = int(pixels.shape[1] * scale_percent / 100)
@@ -73,18 +73,20 @@ if __name__ == '__main__':
         face_normal = 20*find_normal(faces[0]['keypoints'])
         gaze_vector = (face_normal[0]+dps[0], face_normal[1]+dps[1])
         
-        #draw_normal(image,gaze_vector,left_pupil,(0,255,0))
-        #draw_normal(image,gaze_vector,right_pupil,(0,255,0))
+        draw_normal(image,gaze_vector,left_pupil,(0,255,0))
+        draw_normal(image,gaze_vector,right_pupil,(0,255,0))
         draw_landmarks(image,pred_left,lc)
         draw_landmarks(image,pred_right,rc)
         
         between_eyes = (int((left_pupil[0]+right_pupil[0])*0.5),int((left_pupil[1]+right_pupil[1])*0.5))
         draw_normal(image,dps,between_eyes,(255,0,0))
+        """
         p1 = gaze.find_true_center(pred_left)*3+lc
         p2 = gaze.find_true_center(pred_right)*3+rc
         image = cv2.circle(image, (int(np.round(p1[0])),int(np.round(p1[1]))), 1, (0,0,255))
         image = cv2.circle(image, (int(np.round(p2[0])),int(np.round(p2[1]))), 1, (0,0,255))
-        #draw_normal(image,3*face_normal,faces[0]['keypoints']['nose'])
+        """
+        draw_normal(image,3*face_normal,faces[0]['keypoints']['nose'])
         cv2.imshow('pixels',image)
         if cv2.waitKey(0) == 27:
             break  # esc to quit
