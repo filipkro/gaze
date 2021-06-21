@@ -35,8 +35,8 @@ class eye_gaze:
         ortho = np.array([corner_vector[1],-corner_vector[0]])
         if (ortho[1]>0):
             ortho *= -1
-        ortho /= np.linalg.norm(ortho)
-        eye_mid = (eye_mid + 1.3*ortho)      #TODO!!!
+        # ortho /= np.linalg.norm(ortho)
+        eye_mid = (eye_mid + 0.05*ortho)      #TODO!!! + 1.3
         return eye_mid
 
         """
